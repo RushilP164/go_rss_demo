@@ -57,7 +57,7 @@ func startScraping(db *database.Queries, concurrency int, timeBetweenRequest tim
 
 }
 
-// ToDo: Implement nested Go routines
+// ToDo: Make a batches of x number of go routines for hit sql queries
 func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 	defer wg.Done()
 
@@ -97,8 +97,8 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 			continue
 		}
 	}
-	// After everything mark feed as fetched
-	// If err, just printing the log
+	/** After everything mark feed as fetched
+	If err, just printing the log */
 	_, err = db.MarkFeedFetched(context.Background(), feed.ID)
 	if err != nil {
 		log.Printf("Couldn't mark feed %s fetched: %v", feed.Name, err)

@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -32,6 +31,7 @@ func main() {
 		log.Fatal("DB URL not found")
 	}
 
+	// Connect database
 	conn, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		log.Fatal("Can't connect to database")
@@ -55,15 +55,12 @@ func main() {
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", handlerError)
 	v1Router.Post("/users", apiConf.handlerUsersCreate)
-	// Que: Is this curring?
 	v1Router.Get("/users/by-apikey", apiConf.middlewareAuth(apiConf.handlerGetUser))
 	v1Router.Post("/feeds", apiConf.middlewareAuth(apiConf.handlerFeedsCreate))
 	v1Router.Get("/feeds", apiConf.handlerGetFeeds)
-
 	v1Router.Post("/feed-follows", apiConf.middlewareAuth(apiConf.handlerCreateFeedFollows))
 	v1Router.Get("/feed-follows", apiConf.middlewareAuth(apiConf.handlerGetFeedFollows))
 	v1Router.Delete("/feed-follows/{feedFollowID}", apiConf.middlewareAuth(apiConf.handlerDeleteFeedFollows))
-
 	v1Router.Get("/posts", apiConf.middlewareAuth(apiConf.handlerGetPosts))
 
 	router.Mount("/v1", v1Router)
@@ -73,9 +70,10 @@ func main() {
 		Addr:    ":" + portString,
 	}
 
-	const collectionConcurrency = 10
-	const collectionInterval = 5 * time.Minute
-	go startScraping(apiConf.DB, collectionConcurrency, collectionInterval)
+	// // Start scrapping
+	// const collectionConcurrency = 10
+	// const collectionInterval = 5 * time.Minute
+	// go startScraping(apiConf.DB, collectionConcurrency, collectionInterval)
 
 	log.Printf("Sever started runnign on %v", portString)
 	srvErr := srv.ListenAndServe()

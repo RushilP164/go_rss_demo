@@ -11,6 +11,7 @@ import (
 	"github.com/rushilp164/go_rss_demo/internal/database"
 )
 
+// Que: What if we don't use pointer here?
 func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request) {
 	type userParams struct {
 		Name string
