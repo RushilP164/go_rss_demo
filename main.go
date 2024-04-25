@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -31,7 +32,6 @@ func main() {
 		log.Fatal("DB URL not found")
 	}
 
-	// Connect database
 	conn, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		log.Fatal("Can't connect to database")
@@ -70,10 +70,10 @@ func main() {
 		Addr:    ":" + portString,
 	}
 
-	// // Start scrapping
-	// const collectionConcurrency = 10
-	// const collectionInterval = 5 * time.Minute
-	// go startScraping(apiConf.DB, collectionConcurrency, collectionInterval)
+	// Start scrapping
+	const collectionConcurrency = 10
+	const collectionInterval = 5 * time.Minute
+	go startScraping(apiConf.DB, collectionConcurrency, collectionInterval)
 
 	log.Printf("Sever started runnign on %v", portString)
 	srvErr := srv.ListenAndServe()
