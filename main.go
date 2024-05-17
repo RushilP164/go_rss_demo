@@ -28,6 +28,7 @@ func main() {
 	}
 
 	dbUrl := os.Getenv("DB_URL")
+	log.Println(dbUrl)
 	if dbUrl == "" {
 		log.Fatal("DB URL not found")
 	}

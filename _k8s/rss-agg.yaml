@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rss-agg-deployment
+  namespace: default
+  labels:
+    app: rss-agg-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rss-agg-pod
+  template:
+    metadata:
+      labels:
+        app: rss-agg-pod
+    spec:
+      imagePullSecrets:
+        - name: ecr-key
+      containers:
+        - name: rss-agg-container
+          image: 740287476675.dkr.ecr.us-east-1.amazonaws.com/rss-agg:1.0
+          imagePullPolicy: Always
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo $(DB_URL)
+              goose -dir /app/sql/schema postgres $(DB_URL) up
+              /app/go_rss_demo
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: PG_SERIVCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: rss-config-map
+                  key: db-url
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rss-agg-secret
+                  key: postgres-password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rss-agg-secret
+                  key: postgres-username
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: rss-agg-secret
+                  key: postgres-db
+            - name: DB_URL
+              value: postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(PG_SERIVCE_URL)/$(POSTGRES_DB)?sslmode=disable
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rss-agg-service
+  namespace: default
+spec:
+  selector:
+    app: rss-agg-pod
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30001
